@@ -1,7 +1,7 @@
 
 # Introduction
 
-This repo contains [`kustomize`](https://kustomize.io/) templates for deploying [`trino`](https://trino.io/) into `kubernetes`. `trino` publishes a `helm` chart ([here](https://github.com/trinodb/charts)). `kustomize` is a `k8s`-native alternative to `helm` that follows a very different strategy: layering and merging instead of templating. In some ways it is easier to work with, in some ways it's harder. For example, compare the messy specific replacements in `kustomize/359` -- which are easy in `helm` -- to the relatively compact, declarative and flexible actual deployment spec in `example/`. In general `kustomize` templates are _much_ easier to read for someone loosely familiar with `kubernetes` manifests. `helm` charts just get very cluttered with templating directives. 
+This repo contains [`kustomize`](https://kustomize.io/) templates for deploying [`trino`](https://trino.io/) into `kubernetes`. `trino` publishes a `helm` chart ([here](https://github.com/trinodb/charts)). `kustomize` is a `k8s`-native alternative to `helm` that follows a very different strategy: layering and merging instead of templating. In some ways it is easier to work with, in some ways it's harder. For example, compare the messy specific replacements in `kustomize/359` -- which are easy in `helm` -- to the relatively compact, declarative and flexible actual deployment spec in `example/`. In general `kustomize` templates are _much_ easier to read for someone loosely familiar with `kubernetes` manifests. `helm` charts just get very cluttered with templating directives. `kustomize` templates are also very extensible, while `helm` charts either require forking or centralized upgrades to customize. 
 
 # Quick Start
 
