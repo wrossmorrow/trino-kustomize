@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trino-coordinator
+spec:
+  template:
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: trino-coordinator-nodes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trino-worker
+spec:
+  template:
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: trino-worker-nodes

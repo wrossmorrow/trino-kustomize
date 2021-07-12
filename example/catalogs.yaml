@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trino-catalog
+data:
+  postgresdb.properties: |-
+    connector.name=postgresql
+    connection-url=jdbc:postgresql://postgres-host:5432/postgres
+    connection-user=username
+    connection-password=password
+  mongodb.properties: |-
+    connector.name=mongodb
+    mongodb.seeds=some-server-at.mongodb.net:27017
+    mongodb.schema-collection=_schema
+    mongodb.credentials=username:password@admin
