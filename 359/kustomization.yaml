@@ -1,0 +1,87 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../latest
+
+patchesJson6902:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: trino-coordinator
+  patch: |-
+    - op: replace
+      path: /metadata/labels/trino-release
+      value: "v359"
+    - op: replace
+      path: /spec/selector/matchLabels/trino-release
+      value: "v359"
+    - op: replace
+      path: /spec/template/metadata/labels/trino-release
+      value: "v359"
+    - op: replace
+      path: /spec/template/spec/containers/0/image
+      value: trinodb/trino:359
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: trino-worker
+  patch: |-
+    - op: replace
+      path: /metadata/labels/trino-release
+      value: "v359"
+    - op: replace
+      path: /spec/selector/matchLabels/trino-release
+      value: "v359"
+    - op: replace
+      path: /spec/template/metadata/labels/trino-release
+      value: "v359"
+    - op: replace
+      path: /spec/template/spec/containers/0/image
+      value: trinodb/trino:359
+- target:
+    version: v1
+    kind: Service
+    name: trino
+  patch: |-
+    - op: replace
+      path: /metadata/labels/trino-release
+      value: "v359"
+    - op: replace
+      path: /spec/selector/trino-release
+      value: "v359"
+- target:
+    group: autoscaling
+    version: v2beta2
+    kind: HorizontalPodAutoscaler
+    name: trino-workers
+  patch: |-
+    - op: replace
+      path: /metadata/labels/trino-release
+      value: "v359"
+- target:
+    version: v1
+    kind: ConfigMap
+    name: trino-coordinator
+  patch: |-
+    - op: replace
+      path: /metadata/labels/trino-release
+      value: "v359"
+- target:
+    version: v1
+    kind: ConfigMap
+    name: trino-worker
+  patch: |-
+    - op: replace
+      path: /metadata/labels/trino-release
+      value: "v359"
+- target:
+    version: v1
+    kind: ConfigMap
+    name: trino-catalog
+  patch: |-
+    - op: replace
+      path: /metadata/labels/trino-release
+      value: "v359"

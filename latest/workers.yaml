@@ -1,0 +1,137 @@
+# Worker configuration
+# 
+# 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: worker
+  labels:
+    app: trino
+    trino-release: latest
+    trino-component: worker
+data:
+  node.properties: |
+    node.environment=dev
+    node.data-dir=/data/trino
+    plugin.dir=/usr/lib/trino/plugin
+  jvm.config: |
+    -server
+    -Xmx4G
+    -XX:+UseG1GC
+    -XX:G1HeapRegionSize=32M
+    -XX:+UseGCOverheadLimit
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+HeapDumpOnOutOfMemoryError
+    -XX:+ExitOnOutOfMemoryError
+    -Djdk.attach.allowAttachSelf=true
+    -XX:-UseBiasedLocking
+    -XX:ReservedCodeCacheSize=512M
+    -XX:PerMethodRecompilationCutoff=10000
+    -XX:PerBytecodeRecompilationCutoff=10000
+    -Djdk.nio.maxCachedBufferSize=2000000
+  config.properties: |
+    coordinator=false
+    http-server.http.port=8080
+    query.max-memory=8GB
+    query.max-memory-per-node=1GB
+    query.max-total-memory-per-node=2GB
+    memory.heap-headroom-per-node=1GB
+    discovery.uri=http://trino:8080
+  log.properties: |
+    io.trino=INFO
+---
+# Worker deployment spec
+# 
+# Note that the JVM configuration implies resource requests
+# and limits. 
+# 
+# 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trino-worker
+  labels:
+    app: trino
+    trino-release: latest
+    trino-component: worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: trino
+      trino-release: latest
+      trino-component: worker
+  template:
+    metadata:
+      labels:
+        app: trino
+        trino-release: latest
+        trino-component: worker
+    spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: trino-worker
+        - name: catalog-volume
+          configMap:
+            name: trino-catalog
+      containers:
+        - name: trino-worker
+          image: "trinodb/trino:latest"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /etc/trino
+              name: config-volume
+            - mountPath: /etc/trino/catalog
+              name: catalog-volume
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /v1/info
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /v1/info
+              port: http
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 2048Mi
+            requests:
+              cpu: 1000m
+              memory: 1024Mi
+      # nodeSelector:
+      # affinity:
+      # tolerations:
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: trino-workers
+  labels:
+    app: trino
+    trino-release: latest
+    trino-component: worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: trino-worker
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 75
